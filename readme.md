@@ -25,7 +25,7 @@ Put [_wavefont.woff2_](./wavefont.woff2) into your project directory and use thi
 	.wavefont {
 		font-family: wavefont, blank;
 		--wdth: 10;
-		font-variation-settings: 'wdth' var(--wdth), 'algn' 0.5, 'radi' 30;
+		font-variation-settings: 'wdth' var(--wdth), 'algn' 0.5, 'SOFT' 30;
 	}
 </style>
 
@@ -115,7 +115,7 @@ Tag | Range | Meaning
 ---|---|---
 `wdth` | _1_-_1000_ | Bar width (in upm).
 `algn` | _0_-_1_ | _0_ for bottom align, _0.5_ for center and _1_ for top align.
-`radi` | _0_-_50_ | Border radius, percentage of glyph width.
+`SOFT` | _0_-_50_ | Border radius, percentage of glyph width.
 
 <!-- `ampl` | _0_-_1_ | Amplitude (height) or bars. -->
 

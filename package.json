@@ -7,10 +7,10 @@
     "build": "npm run build-ufo && npm run build-masterotfs & npm run build-otf && npm run build-ttf && npm run build-woff2",
     "build-ufo": "plop build-ufo wavefont100",
     "build-masterotfs": "buildmasterotfs --mkot -r,-omitMacNames -d ./build/wavefont100/wavefont.designspace",
-    "build-ttf": "fontmake --no-optimize-gvar -m ./build/wavefont100/wavefont.designspace -o variable --output-path ./fonts/variable/wavefont[RADI,ALGN,wght,wdth].ttf",
-    "build-otf": "npm run build-masterotfs && buildcff2vf -c -k -d ./build/wavefont100/wavefont.designspace -o ./fonts/variable/wavefont[RADI,ALGN,wght,wdth].otf",
+    "build-ttf": "fontmake --no-optimize-gvar -m ./build/wavefont100/wavefont.designspace -o variable --output-path ./fonts/variable/wavefont[SOFT,ALGN,wght,wdth].ttf",
+    "build-otf": "npm run build-masterotfs && buildcff2vf -c -k -d ./build/wavefont100/wavefont.designspace -o ./fonts/variable/wavefont[SOFT,ALGN,wght,wdth].otf",
     "subroutinize": "shx cp ./fonts/variable/wavefont.otf ./fonts/variable/wavefont.min.otf && tx -cff2 +S +b ./fonts/variable/wavefont.otf > ./table.CFF2 && sfntedit -a CFF2=./table.CFF2 ./fonts/variable/wavefont.min.otf",
-    "build-woff2": "fonttools ttLib.woff2 compress ./fonts/variable/wavefont[RADI,ALGN,wght,wdth].otf"
+    "build-woff2": "fonttools ttLib.woff2 compress ./fonts/variable/wavefont[SOFT,ALGN,wght,wdth].otf"
   },
   "repository": {
     "type": "git",

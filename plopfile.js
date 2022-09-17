@@ -3,69 +3,44 @@ const dedent = require('dedent')
 // const UPM = 2048
 const UPM = 1000
 
-const ZERO_CHAR = ` \t`.split('').map(v=>v.charCodeAt(0)) //[0x09,0x0a,0x0b,0x0c,0x0d,0x20,0x85,0xa0,0x1680,0x180e,0x2000,0x2001,0x2002,0x2003,0x2004,0x2005,0x2006,0x2007,0x2008,0x2009,0x200a,0x200b,0x200c,0x200d,0x2028,0x2029,0x202f,0x205f,0x2060,0x2061,0x2062,0x3000,0xfeff].map(String.fromCharCode)
-
-const ONE_CHAR = `.-_`.split('').map(v=>v.charCodeAt(0)) //`.-–—―_¯ˉˍ˗‐‑‒‾⁃⁻₋−⎯⏤─➖⸺⸻𐆑`
-
-const MAX_CHAR = [`|`].map(v=>v.charCodeAt(0)) //`|｜ǀ∣│।`
-
-const BAR_CHAR = `▁▂▃▄▅▆▇█`.split('').map(v=>v.charCodeAt(0))
+// Latin-core (with some bad exceptions)
+const ZERO_CHAR = `\x00\x01\x02\x03\x04\x05\x06\x07\b\t\n\v\f\r\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !"#$%&\'()/:;<=>?@[\\]^\`{}~\x7F\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþıŒœʻʼˆ˚˜‖‗‘’‚‛“”„‟†‡•‣․‥…‧ ‰‱′″‴‵‶‷‸‹›※‼‽‾‿⁀⁁⁂⁃⁄⁅⁆⁇⁈⁉⁊⁋⁌⁍⁎⁏⁐⁑⁒⁓⁔⁕⁖⁗⁘ɴ™↑↓∕`
+const ONE_CHAR = `*+,-._~‐‑‒–—―−`
+const MAX_CHAR = `|`
+const BAR_CHAR = `▁▂▃▄▅▆▇█`
+const LOWCASE_CHAR = `abcdefghijklmnopqrstuvwxyz`
+const UPCASE_CHAR = `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
+const DIGIT_CHAR = `0123456789`
 
 const FONTFACE = {
-  wavefont10: {
-    name: 'wavefont10',
-    min: 0,
-    max: 10,
-    alias: {
-      // NOTE: no need to stub 0s because they're covered by fallback blank font
-      // 0: [...ZERO_CHAR, ...ASCII_CHAR.filter(code => !`0123456789abcdef`.includes(String.fromCharCode(code)) && !ONE_CHAR.includes(code) && !MAX_CHAR.includes(code))],
-      1: ONE_CHAR,
-      10: [...MAX_CHAR, ...`abcdef`.split('').map(v => v.charCodeAt(0))]
-    },
-    values: `0123456789a`.split(``).map(v => v.charCodeAt(0))
+  name: 'wavefont',
+  min: 0,
+  max: 100,
+  alias: {
+    0: [...ZERO_CHAR],
+    1: [...ONE_CHAR, BAR_CHAR[0]],
+    14: [BAR_CHAR[1]], 28: [BAR_CHAR[2]], 42: [BAR_CHAR[3]], 56: [BAR_CHAR[4]], 72: [BAR_CHAR[5]], 86: [BAR_CHAR[6]],
+    100: [...MAX_CHAR, BAR_CHAR[7]]
   },
-
-  wavefont100: {
-    name: 'wavefont100',
-    min: 0,
-    max: 100,
-    alias: {
-      0: [...ZERO_CHAR],
-      1: [...ONE_CHAR, BAR_CHAR[0]],
-      14: [BAR_CHAR[1]], 28: [BAR_CHAR[2]], 42: [BAR_CHAR[3]], 56: [BAR_CHAR[4]], 72: [BAR_CHAR[5]], 86: [BAR_CHAR[6]],
-
-      // 0-9
-      10: [49],
-      20: [50],
-      30: [51],
-      40: [52],
-      50: [53],
-      60: [54],
-      70: [55],
-      80: [56],
-      90: [57],
-      100: [...MAX_CHAR, BAR_CHAR[7]]
-    },
-    values: Array.from({length: 108}).map((v,i)=>(0x0100 + i))
-  },
-
-  wavefont255: {
-    name: 'wavefont255',
-    min: 0, max: 255,
-    values: Array.from({length: 255})
-  },
-
+  values: Array.from({length: 108}).map((v,i)=>(0x0100 + i))
 }
+LOWCASE_CHAR.forEach((char,i) => (FONTFACE.alias[(i+1)*4 + .5]||=[]).push(char.charCodeAt(0)))
+UPCASE_CHAR.forEach((char,i) => (FONTFACE.alias[(i+1)*4]||=[]).push(char.charCodeAt(0)))
+DIGIT_CHAR.forEach((char,i) => (FONTFACE.alias[i*10]||=[]).push(char.charCodeAt(0)))
 
 const AXIS = {
+  // advance width in fact
   width: {tag: 'wdth', min: 1, max: 1000, default: 1},
 
-  // 400 weight value is required by google fonts https://rosaliewagner.notion.site/Variable-fonts-specifics-aa524f2bfb4e40c7b3e0749039304702#49f2297861a24410bdc8f4a7522dd9a6
-  // too large values don't make much sense here
+  // 400 weight value is required by google fonts
+  // too large values don't make much sense here and just bloats size
   weight: {tag: 'wght', min: 1, max: 400, default: 1},
 
-  align: {tag: 'ALGN', min: 0, max: 1, default: 0},
-  radius: {tag: 'RADI', min: 0, max: 50, default: 0}
+  // we redistribute center alignment under capcase and cyrillic ranges
+  // align: {tag: 'ALGN', min: 0, max: 1, default: 0},
+
+  // softness is closest by meaning axis name
+  radius: {tag: 'SOFT', min: 0, max: 50, default: 0}
 }
 
 module.exports = function (plop) {
@@ -108,21 +83,13 @@ module.exports = function (plop) {
 
       // create master cases
       const masters = {}
-      const k = (w=1,b,a,r) => `w${w}b${b}a${a}r${r}`, v = (w=1,b,a,r) => ({width:w, weight:b, align:a, radius:r})
-      masters[k(width.min, weight.min, align.min, radius.min)] = v(width.min, weight.min, align.min, radius.min)
-      masters[k(width.min, weight.min, align.min, radius.max)] = v(width.min, weight.min, align.min, radius.max)
+      const k = (w=1,b,r) => `w${w}b${b}r${r}`, v = (w=1,b,r) => ({width:w, weight:b, radius:r})
       masters[k(width.min, weight.min, align.max, radius.min)] = v(width.min, weight.min, align.max, radius.min)
       masters[k(width.min, weight.min, align.max, radius.max)] = v(width.min, weight.min, align.max, radius.max)
-      masters[k(width.min, weight.max, align.min, radius.min)] = v(width.min, weight.max, align.min, radius.min)
-      masters[k(width.min, weight.max, align.min, radius.max)] = v(width.min, weight.max, align.min, radius.max)
       masters[k(width.min, weight.max, align.max, radius.min)] = v(width.min, weight.max, align.max, radius.min)
       masters[k(width.min, weight.max, align.max, radius.max)] = v(width.min, weight.max, align.max, radius.max)
-      masters[k(width.max, weight.min, align.min, radius.min)] = v(width.max, weight.min, align.min, radius.min)
-      masters[k(width.max, weight.min, align.min, radius.max)] = v(width.max, weight.min, align.min, radius.max)
       masters[k(width.max, weight.min, align.max, radius.min)] = v(width.max, weight.min, align.max, radius.min)
       masters[k(width.max, weight.min, align.max, radius.max)] = v(width.max, weight.min, align.max, radius.max)
-      masters[k(width.max, weight.max, align.min, radius.min)] = v(width.max, weight.max, align.min, radius.min)
-      masters[k(width.max, weight.max, align.min, radius.max)] = v(width.max, weight.max, align.min, radius.max)
       masters[k(width.max, weight.max, align.max, radius.min)] = v(width.max, weight.max, align.max, radius.min)
       masters[k(width.max, weight.max, align.max, radius.max)] = v(width.max, weight.max, align.max, radius.max)
 
